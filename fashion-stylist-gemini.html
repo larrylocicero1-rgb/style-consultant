@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATELIER — AI Style Consultant · Gemini</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --warm-white: #FAF8F4;
+    --charcoal: #1C1C1C;
+    --charcoal-mid: #2E2E2E;
+    --gold: #B8963E;
+    --gold-light: #D4AF6A;
+    --muted: #7A7570;
+    --border: rgba(28,28,28,0.12);
+    --border-strong: rgba(28,28,28,0.25);
+    --gemini-blue: #4285F4;
+    --gemini-blue-dark: #1a73e8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--warm-white);
+    color: var(--charcoal);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--charcoal);
+    color: var(--cream);
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+    border-bottom: 1px solid rgba(184,150,62,0.3);
+  }
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 300;
+    letter-spacing: 0.35em;
+    color: var(--cream);
+  }
+  .logo span { color: var(--gold); }
+  .powered-by {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .gemini-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(66,133,244,0.15);
+    border: 1px solid rgba(66,133,244,0.3);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: #89b4fa;
+  }
+  .gemini-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: linear-gradient(135deg, #4285F4, #34A853, #FBBC05, #EA4335);
+    flex-shrink: 0;
+  }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem; }
+
+  /* API KEY SECTION */
+  .api-key-section {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    padding: 1.75rem 2rem;
+    margin-bottom: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .api-key-icon {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: rgba(66,133,244,0.1);
+    border: 1px solid rgba(66,133,244,0.25);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .api-key-icon svg { width: 18px; height: 18px; }
+  .api-key-info { flex: 1; min-width: 200px; }
+  .api-key-info h3 { font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; }
+  .api-key-info p { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+  .api-key-info a { color: var(--gemini-blue); text-decoration: none; }
+  .api-key-info a:hover { text-decoration: underline; }
+  .api-key-input-wrap { display: flex; gap: 0.5rem; align-items: center; flex: 1; min-width: 260px; }
+  .api-key-input {
+    flex: 1;
+    border: 1px solid var(--border-strong);
+    background: white;
+    padding: 0.65rem 1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.83rem;
+    color: var(--charcoal);
+    outline: none;
+    letter-spacing: 0.02em;
+  }
+  .api-key-input:focus { border-color: var(--gemini-blue); }
+  .api-key-input::placeholder { color: var(--muted); font-size: 0.78rem; }
+  .key-status {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+    padding: 0.4rem 0.75rem;
+    border-radius: 2px;
+  }
+  .key-status.unset { color: var(--muted); background: transparent; }
+  .key-status.set { color: #3A7A3A; background: rgba(90,138,90,0.1); border: 1px solid rgba(90,138,90,0.2); }
+
+  /* UPLOAD */
+  .upload-zone {
+    border: 1px dashed var(--border-strong);
+    border-radius: 2px;
+    padding: 4rem 2rem;
+    text-align: center;
+    background: var(--cream);
+    cursor: pointer;
+    transition: border-color 0.3s, background 0.3s;
+    position: relative;
+  }
+  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--gold); background: #F8F3EA; border-style: solid; }
+  .upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-icon {
+    width: 56px; height: 56px;
+    border: 1px solid var(--border-strong);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem;
+    background: white;
+  }
+  .upload-icon svg { width: 22px; height: 22px; stroke: var(--gold); }
+  .upload-headline { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 400; margin-bottom: 0.5rem; letter-spacing: 0.05em; }
+  .upload-sub { font-size: 0.82rem; color: var(--muted); letter-spacing: 0.05em; }
+
+  .preview-section { display: none; gap: 2rem; align-items: flex-start; margin-top: 2rem; }
+  .preview-section.visible { display: flex; }
+  .preview-box { flex: 0 0 240px; border: 1px solid var(--border); background: white; padding: 0.5rem; }
+  .preview-box img { width: 100%; display: block; }
+  .preview-label { font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); text-align: center; padding: 0.5rem 0 0; }
+  .preview-meta { flex: 1; }
+  .preview-meta h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 400; margin-bottom: 0.75rem; line-height: 1.2; }
+  .preview-meta p { font-size: 0.85rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem; }
+
+  /* MODEL SELECTOR */
+  .model-select-wrap { margin-bottom: 1.25rem; }
+  .model-select-label { font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; display: block; }
+  .model-select {
+    border: 1px solid var(--border-strong);
+    background: white;
+    padding: 0.55rem 1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    color: var(--charcoal);
+    cursor: pointer;
+    outline: none;
+    width: 100%;
+    max-width: 320px;
+  }
+  .model-select:focus { border-color: var(--gemini-blue); }
+
+  .btn-analyze {
+    background: var(--charcoal);
+    color: var(--cream);
+    border: none;
+    padding: 1rem 2.5rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-analyze:hover { background: var(--charcoal-mid); }
+  .btn-analyze:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* LOADING */
+  .loading-section { display: none; text-align: center; padding: 4rem 2rem; }
+  .loading-section.visible { display: block; }
+  .loader {
+    display: inline-block; width: 40px; height: 40px;
+    border: 1px solid var(--border-strong);
+    border-top-color: var(--gemini-blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin-bottom: 1.5rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-status { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 300; color: var(--muted); font-style: italic; }
+  .step-item { font-size: 0.75rem; letter-spacing: 0.1em; color: var(--muted); padding: 0.3rem 0; transition: color 0.3s; }
+  .step-item.active { color: var(--gemini-blue); }
+  .step-item.done { color: var(--charcoal); }
+
+  /* REPORT */
+  .report-section { display: none; }
+  .report-section.visible { display: block; }
+  .divider { display: flex; align-items: center; gap: 1rem; margin: 3rem 0; }
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+  .divider-text { font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+
+  .score-block {
+    background: var(--charcoal); color: var(--cream);
+    padding: 3rem; display: grid; grid-template-columns: auto 1fr;
+    gap: 3rem; align-items: center; margin-bottom: 3rem;
+  }
+  .score-circle {
+    width: 120px; height: 120px; border-radius: 50%;
+    border: 1px solid var(--gold);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .score-number { font-family: 'Cormorant Garamond', serif; font-size: 2.8rem; font-weight: 300; color: var(--gold); line-height: 1; }
+  .score-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(245,240,232,0.5); margin-top: 4px; }
+  .score-verdict { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; font-style: italic; line-height: 1.5; color: var(--cream); }
+  .score-rating { font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.75rem; }
+
+  .critique-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 3rem; }
+  .critique-card { border: 1px solid var(--border); background: white; padding: 1.5rem; }
+  .critique-card-title { font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+  .critique-card-text { font-size: 0.85rem; color: var(--charcoal); line-height: 1.75; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 3rem; }
+  .list-card { border: 1px solid var(--border); background: white; padding: 1.5rem; }
+  .list-card-title { font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+  .list-card.strengths .list-card-title { color: #5A8A5A; }
+  .list-card.improvements .list-card-title { color: #8A5A5A; }
+  .list-card ul { list-style: none; }
+  .list-card ul li { font-size: 0.83rem; line-height: 1.6; padding: 0.4rem 0 0.4rem 1.2rem; border-bottom: 1px solid var(--border); position: relative; color: var(--charcoal); }
+  .list-card ul li:last-child { border-bottom: none; }
+  .list-card.strengths ul li::before { content: '+'; position: absolute; left: 0; color: #5A8A5A; font-weight: 500; }
+  .list-card.improvements ul li::before { content: '→'; position: absolute; left: 0; color: #8A5A5A; font-size: 0.75rem; }
+
+  .outfits-headline { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+  .outfits-sub { font-size: 0.8rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 2rem; }
+  .outfits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem; }
+  .outfit-card { border: 1px solid var(--border); background: white; overflow: hidden; }
+  .outfit-img-wrap { aspect-ratio: 2/3; background: var(--cream); overflow: hidden; position: relative; }
+  .outfit-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.5s; }
+  .outfit-img-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; }
+  .outfit-img-placeholder .img-loader { width: 28px; height: 28px; border: 1px solid var(--border-strong); border-top-color: var(--gemini-blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .outfit-img-placeholder span { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; }
+  .outfit-body { padding: 1.25rem; }
+  .outfit-number { font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+  .outfit-title { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-weight: 400; margin-bottom: 0.75rem; line-height: 1.3; }
+  .outfit-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.7; margin-bottom: 1rem; }
+  .outfit-items { list-style: none; }
+  .outfit-items li { font-size: 0.77rem; color: var(--charcoal); padding: 0.3rem 0 0.3rem 1rem; border-bottom: 1px solid var(--border); position: relative; }
+  .outfit-items li:last-child { border-bottom: none; }
+  .outfit-items li::before { content: '—'; position: absolute; left: 0; color: var(--gold); font-size: 0.65rem; }
+
+  .action-bar { display: flex; gap: 1rem; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+  .btn-secondary { background: transparent; color: var(--charcoal); border: 1px solid var(--border-strong); padding: 0.75rem 1.75rem; font-family: 'DM Sans', sans-serif; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+  .btn-secondary:hover { background: var(--cream); border-color: var(--gold); }
+  .btn-print { background: var(--gold); color: white; border: 1px solid var(--gold); padding: 0.75rem 1.75rem; font-family: 'DM Sans', sans-serif; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+  .btn-print:hover { background: var(--gold-light); border-color: var(--gold-light); }
+
+  .error-box { background: #FEF2F2; border: 1px solid #FCA5A5; padding: 1.25rem 1.5rem; margin-top: 1rem; font-size: 0.85rem; color: #991B1B; display: none; border-radius: 2px; line-height: 1.6; }
+  .error-box.visible { display: block; }
+
+  .info-note { background: rgba(66,133,244,0.06); border: 1px solid rgba(66,133,244,0.2); padding: 1rem 1.25rem; margin-bottom: 2rem; font-size: 0.8rem; color: #1a5fa8; line-height: 1.6; border-radius: 2px; }
+  .info-note strong { font-weight: 500; }
+
+  @media (max-width: 680px) {
+    .critique-grid, .two-col, .outfits-grid { grid-template-columns: 1fr; }
+    .score-block { grid-template-columns: 1fr; text-align: center; }
+    .preview-section { flex-direction: column; }
+    .preview-box { flex: none; width: 100%; }
+    .api-key-section { flex-direction: column; }
+  }
+  @media print {
+    header { position: static; }
+    .api-key-section, .action-bar, .upload-zone, .preview-section, .loading-section, .info-note { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ATELIER <span>·</span> AI</div>
+  <div class="powered-by">
+    <span>Powered by</span>
+    <div class="gemini-badge">
+      <div class="gemini-dot"></div>
+      Gemini
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- API KEY -->
+  <div class="api-key-section">
+    <div class="api-key-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--gemini-blue)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+      </svg>
+    </div>
+    <div class="api-key-info">
+      <h3>Gemini API Key Required</h3>
+      <p>Get your free API key at <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a> — your key stays local in this browser session and is never stored.</p>
+    </div>
+    <div class="api-key-input-wrap">
+      <input type="password" class="api-key-input" id="apiKeyInput" placeholder="AIza…" autocomplete="off" oninput="updateKeyStatus()">
+      <div class="key-status unset" id="keyStatus">Not set</div>
+    </div>
+  </div>
+
+  <div class="info-note">
+    <strong>How it works:</strong> Upload a full-body photo of your outfit → Gemini Vision analyzes your style, fit, grooming &amp; hairstyle → You receive a scored critique + 4 AI-generated outfit recommendations tailored to your look.
+  </div>
+
+  <!-- UPLOAD SECTION -->
+  <div id="uploadSection">
+    <div style="text-align:center; padding-bottom: 2rem;">
+      <p style="font-size:0.7rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--muted); margin-bottom:0.75rem;">Step 01</p>
+      <h1 style="font-family:'Cormorant Garamond',serif; font-size:2.5rem; font-weight:300; letter-spacing:0.05em; line-height:1.2; margin-bottom:0.75rem;">Your Style, <em>Elevated</em></h1>
+      <p style="font-size:0.85rem; color:var(--muted); max-width:480px; margin:0 auto; line-height:1.7;">Upload a full-body photo of your current outfit. Gemini will analyze your look, score it, and generate four bespoke outfit recommendations.</p>
+    </div>
+
+    <div class="upload-zone" id="dropZone">
+      <input type="file" id="fileInput" accept="image/*">
+      <div class="upload-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+      <div class="upload-headline">Drop your photo here</div>
+      <p class="upload-sub">or click to browse — JPG, PNG, WEBP · Full-body preferred</p>
+    </div>
+
+    <div id="errorBox" class="error-box"></div>
+
+    <div class="preview-section" id="previewSection">
+      <div class="preview-box">
+        <img id="previewImg" src="" alt="Your outfit">
+        <div class="preview-label">Uploaded Look</div>
+      </div>
+      <div class="preview-meta">
+        <h2>Ready for<br><em>Your Consultation</em></h2>
+        <p>Your image is loaded. Gemini will analyze clothing, fit, grooming, and hairstyle — then provide a scored critique with four tailored outfit recommendations and AI-generated visuals.</p>
+        <div class="model-select-wrap">
+          <label class="model-select-label">Gemini Model</label>
+          <select class="model-select" id="modelSelect">
+            <option value="gemini-2.0-flash">gemini-2.0-flash (Recommended — Fast)</option>
+            <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite (Fastest)</option>
+            <option value="gemini-1.5-pro">gemini-1.5-pro (Most Capable)</option>
+            <option value="gemini-1.5-flash">gemini-1.5-flash (Balanced)</option>
+          </select>
+        </div>
+        <button class="btn-analyze" id="analyzeBtn" onclick="startAnalysis()">
+          Begin Style Analysis
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-section" id="loadingSection">
+    <div class="loader"></div>
+    <div class="loading-status" id="loadingStatus">Consulting your stylist…</div>
+    <div class="loading-steps" style="margin-top:1rem;">
+      <div class="step-item" id="step1">— Sending image to Gemini Vision</div>
+      <div class="step-item" id="step2">— Analyzing outfit &amp; style elements</div>
+      <div class="step-item" id="step3">— Crafting style score &amp; recommendations</div>
+      <div class="step-item" id="step4">— Generating outfit visuals</div>
+    </div>
+  </div>
+
+  <!-- REPORT -->
+  <div class="report-section" id="reportSection"></div>
+
+</main>
+
+<script>
+let uploadedImageBase64 = null;
+let uploadedImageType = 'image/jpeg';
+
+const fileInput = document.getElementById('fileInput');
+const dropZone = document.getElementById('dropZone');
+const previewSection = document.getElementById('previewSection');
+const previewImg = document.getElementById('previewImg');
+const errorBox = document.getElementById('errorBox');
+
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+
+function handleFile(file) {
+  if (!file.type.startsWith('image/')) { showError('Please upload an image file (JPG, PNG, or WEBP).'); return; }
+  hideError();
+  uploadedImageType = file.type;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const dataUrl = ev.target.result;
+    uploadedImageBase64 = dataUrl.split(',')[1];
+    previewImg.src = dataUrl;
+    previewSection.classList.add('visible');
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateKeyStatus() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  const status = document.getElementById('keyStatus');
+  if (key.length > 10) {
+    status.textContent = 'Key set ✓';
+    status.className = 'key-status set';
+  } else {
+    status.textContent = 'Not set';
+    status.className = 'key-status unset';
+  }
+}
+
+function showError(msg) { errorBox.innerHTML = msg; errorBox.classList.add('visible'); }
+function hideError() { errorBox.classList.remove('visible'); }
+function setStep(n) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('step' + i);
+    if (i < n) el.className = 'step-item done';
+    else if (i === n) el.className = 'step-item active';
+    else el.className = 'step-item';
+  }
+}
+
+async function startAnalysis() {
+  const apiKey = document.getElementById('apiKeyInput').value.trim();
+  if (!apiKey) { showError('Please enter your Gemini API key above to continue. Get one free at <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a>.'); return; }
+  if (!uploadedImageBase64) { showError('Please upload a photo of your outfit first.'); return; }
+
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('uploadSection').style.display = 'none';
+  const loadingSection = document.getElementById('loadingSection');
+  loadingSection.classList.add('visible');
+  hideError();
+
+  const model = document.getElementById('modelSelect').value;
+  setStep(1);
+  document.getElementById('loadingStatus').textContent = 'Sending image to Gemini…';
+
+  const prompt = `You are an expert male fashion stylist and image consultant with 20 years of luxury fashion experience. Analyze the provided outfit image meticulously.
+
+Return ONLY a valid JSON object with NO markdown, NO backticks, NO preamble — raw JSON only:
+{
+  "styleScore": <integer 1-100>,
+  "ratingLabel": "<one of: Needs Work / Developing / Decent / Good / Strong / Excellent / Impeccable>",
+  "verdict": "<2-3 sentence overall assessment, sophisticated and constructive>",
+  "critique": {
+    "clothing": "<detailed clothing style critique, 3-5 sentences covering colors, style category, aesthetic cohesion>",
+    "fit": "<detailed fit critique, 3-5 sentences covering silhouette, proportions, tailoring issues>",
+    "grooming": "<detailed grooming critique, 3-5 sentences covering beard, skin, nails, fragrance suggestions>",
+    "hairstyle": "<detailed hairstyle critique, 3-5 sentences covering cut, texture, product, style recommendations>",
+    "slimmingTips": "<3-5 sentences of specific techniques to create a leaner, more elongated silhouette through clothing choices>"
+  },
+  "strengths": ["<specific strength 1>", "<specific strength 2>", "<specific strength 3>"],
+  "improvements": ["<actionable improvement 1>", "<actionable improvement 2>", "<actionable improvement 3>", "<actionable improvement 4>"],
+  "outfits": [
+    {
+      "title": "<outfit name, e.g. The Refined Casual>",
+      "occasion": "<e.g. Weekend Brunch / Business Casual / Evening Out / Smart Casual>",
+      "description": "<2-3 sentences describing the complete look, its effect, and why it works for this client>",
+      "imagePrompt": "<very detailed fashion photography prompt: describe every garment with colors, fabrics, and specific styling. End with: professional men's fashion editorial, full body, neutral studio background, high-end photography>",
+      "items": ["<garment 1: color + type + fabric e.g. Slim navy wool chinos>", "<garment 2>", "<garment 3>", "<garment 4>", "<shoes + accessory>"]
+    }
+  ]
+}
+The outfits array must have exactly 4 entries with diverse occasions and aesthetics. Be specific, actionable, and fashion-forward.`;
+
+  try {
+    setStep(2);
+    document.getElementById('loadingStatus').textContent = 'Gemini is analyzing your style…';
+
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const body = {
+      contents: [{
+        parts: [
+          { inline_data: { mime_type: uploadedImageType, data: uploadedImageBase64 } },
+          { text: prompt }
+        ]
+      }],
+      generationConfig: {
+        temperature: 0.75,
+        maxOutputTokens: 3000
+      }
+    };
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      const errMsg = errData?.error?.message || `HTTP ${response.status}`;
+      if (response.status === 400) throw new Error(`Bad request — ensure your image is valid and the model supports vision. Details: ${errMsg}`);
+      if (response.status === 403 || response.status === 401) throw new Error('Invalid or unauthorized API key. Please check your key at aistudio.google.com and try again.');
+      if (response.status === 429) throw new Error('Rate limit reached. Please wait a moment and try again.');
+      throw new Error(`Gemini API error: ${errMsg}`);
+    }
+
+    setStep(3);
+    document.getElementById('loadingStatus').textContent = 'Building your style report…';
+
+    const data = await response.json();
+    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if (!rawText) throw new Error('Gemini returned an empty response. Try a different model or check your image.');
+
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('Could not parse the style analysis response. Try again.');
+    const analysis = JSON.parse(jsonMatch[0]);
+
+    if (!analysis.outfits || analysis.outfits.length < 4) throw new Error('Incomplete analysis received. Please try again.');
+
+    setStep(4);
+    document.getElementById('loadingStatus').textContent = 'Generating outfit visuals…';
+    await new Promise(r => setTimeout(r, 500));
+
+    renderReport(analysis);
+
+    loadingSection.classList.remove('visible');
+    document.getElementById('reportSection').classList.add('visible');
+
+    generateOutfitImages(analysis.outfits);
+
+  } catch (err) {
+    loadingSection.classList.remove('visible');
+    document.getElementById('uploadSection').style.display = '';
+    document.getElementById('analyzeBtn').disabled = false;
+    showError('<strong>Analysis failed:</strong> ' + err.message);
+  }
+}
+
+function renderReport(a) {
+  const report = document.getElementById('reportSection');
+  const scoreColor = a.styleScore >= 80 ? '#5A8A5A' : a.styleScore >= 60 ? '#B8963E' : '#8A5A5A';
+
+  const outfitCards = a.outfits.map((o, i) => `
+    <div class="outfit-card">
+      <div class="outfit-img-wrap">
+        <div class="outfit-img-placeholder" id="ph${i}">
+          <div class="img-loader"></div>
+          <span>Generating look…</span>
+        </div>
+        <img id="oi${i}" src="" alt="${o.title}" style="opacity:0; position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
+      </div>
+      <div class="outfit-body">
+        <div class="outfit-number">Look 0${i+1} · ${o.occasion}</div>
+        <div class="outfit-title">${o.title}</div>
+        <div class="outfit-desc">${o.description}</div>
+        <ul class="outfit-items">${o.items.map(it => `<li>${it}</li>`).join('')}</ul>
+      </div>
+    </div>`).join('');
+
+  report.innerHTML = `
+    <div class="divider"><div class="divider-line"></div><div class="divider-text">Style Report — Powered by Gemini</div><div class="divider-line"></div></div>
+
+    <div class="score-block">
+      <div class="score-circle">
+        <div class="score-number" style="color:${scoreColor}">${a.styleScore}</div>
+        <div class="score-label">/ 100</div>
+      </div>
+      <div>
+        <div class="score-rating">${a.ratingLabel}</div>
+        <div class="score-verdict">"${a.verdict}"</div>
+      </div>
+    </div>
+
+    <div class="critique-grid">
+      <div class="critique-card"><div class="critique-card-title">Clothing Style</div><div class="critique-card-text">${a.critique.clothing}</div></div>
+      <div class="critique-card"><div class="critique-card-title">Fit &amp; Proportion</div><div class="critique-card-text">${a.critique.fit}</div></div>
+      <div class="critique-card"><div class="critique-card-title">Grooming</div><div class="critique-card-text">${a.critique.grooming}</div></div>
+      <div class="critique-card"><div class="critique-card-title">Hairstyle</div><div class="critique-card-text">${a.critique.hairstyle}</div></div>
+      <div class="critique-card" style="grid-column:1/-1"><div class="critique-card-title">Slimming &amp; Silhouette Techniques</div><div class="critique-card-text">${a.critique.slimmingTips}</div></div>
+    </div>
+
+    <div class="two-col">
+      <div class="list-card strengths"><div class="list-card-title">What's Working</div><ul>${a.strengths.map(s => `<li>${s}</li>`).join('')}</ul></div>
+      <div class="list-card improvements"><div class="list-card-title">Areas to Elevate</div><ul>${a.improvements.map(s => `<li>${s}</li>`).join('')}</ul></div>
+    </div>
+
+    <div class="divider"><div class="divider-line"></div><div class="divider-text">Recommended Looks</div><div class="divider-line"></div></div>
+    <div class="outfits-headline">Your Curated<br><em>Style Blueprint</em></div>
+    <div class="outfits-sub">Four AI-generated looks tailored to your profile — ready to shop and wear</div>
+    <div class="outfits-grid">${outfitCards}</div>
+
+    <div style="font-size:0.72rem; color:var(--muted); text-align:center; letter-spacing:0.05em; line-height:1.7; padding-bottom:1rem;">
+      Outfit visuals are AI-generated fashion illustrations. Analysis powered by Google Gemini Vision.
+    </div>
+
+    <div class="action-bar">
+      <button class="btn-secondary" onclick="resetApp()">← New Analysis</button>
+      <button class="btn-print" onclick="window.print()">Print Report</button>
+    </div>`;
+}
+
+async function generateOutfitImages(outfits) {
+  for (let i = 0; i < outfits.length; i++) {
+    try {
+      const prompt = encodeURIComponent(outfits[i].imagePrompt + ', men\'s fashion editorial photography, full body, clean neutral background, professional studio lighting');
+      const url = `https://image.pollinations.ai/prompt/${prompt}?width=512&height=768&model=flux&nologo=true&seed=${Math.floor(Math.random()*99999)}`;
+      const img = document.getElementById('oi' + i);
+      const ph = document.getElementById('ph' + i);
+      img.onload = () => { img.style.opacity = '1'; img.style.position = 'relative'; if(ph) ph.style.display = 'none'; };
+      img.onerror = () => { if(ph) ph.innerHTML = '<span style="font-size:0.7rem;color:var(--muted);padding:1rem;text-align:center;">Visual unavailable</span>'; };
+      img.src = url;
+    } catch(e) { console.warn('Image gen failed', i); }
+    await new Promise(r => setTimeout(r, 400));
+  }
+}
+
+function resetApp() {
+  document.getElementById('uploadSection').style.display = '';
+  document.getElementById('reportSection').classList.remove('visible');
+  document.getElementById('loadingSection').classList.remove('visible');
+  document.getElementById('previewSection').classList.remove('visible');
+  document.getElementById('analyzeBtn').disabled = false;
+  document.getElementById('reportSection').innerHTML = '';
+  uploadedImageBase64 = null;
+  fileInput.value = '';
+  hideError();
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
