@@ -233,7 +233,7 @@
 
   .score-block {
     background: var(--charcoal); color: var(--cream);
-    padding: 3rem; display: grid; grid-template-columns: auto 1fr;
+    padding: 3rem; display: grid; grid-template-columns: auto 1fr auto;
     gap: 3rem; align-items: center; margin-bottom: 3rem;
   }
   .score-circle {
@@ -293,50 +293,24 @@
   .info-note { background: rgba(66,133,244,0.06); border: 1px solid rgba(66,133,244,0.2); padding: 1rem 1.25rem; margin-bottom: 2rem; font-size: 0.8rem; color: #1a5fa8; line-height: 1.6; border-radius: 2px; }
   .info-note strong { font-weight: 500; }
 
-  /* EXPORT BUTTONS */
-  .btn-export {
-    background: #2E7D32; color: white; border: none;
-    padding: 0.75rem 1.4rem; font-family: 'DM Sans', sans-serif;
-    font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase;
-    cursor: pointer; transition: background 0.2s;
+  /* USER PHOTO IN SCORE BLOCK */
+  .score-user-photo {
+    width: 160px; height: 240px;
+    border: 2px solid rgba(184,150,62,0.4);
+    object-fit: cover; object-position: top center;
+    flex-shrink: 0; display: block;
+    background: #2a2a2a;
   }
-  .btn-export:hover { background: #1B5E20; }
-  .btn-gdrive {
-    background: white; color: var(--charcoal);
-    border: 1px solid var(--border-strong);
-    padding: 0.75rem 1.4rem; font-family: 'DM Sans', sans-serif;
-    font-size: 0.75rem; letter-spacing: 0.08em; cursor: pointer;
-    transition: background 0.2s, border-color 0.2s; display: flex; align-items: center;
+  .score-user-wrap {
+    position: relative; flex-shrink: 0;
   }
-  .btn-gdrive:hover { background: var(--cream); border-color: var(--gold); }
-  .gdrive-menu {
-    display: none; position: absolute; bottom: calc(100% + 8px); right: 0;
-    background: white; border: 1px solid var(--border-strong);
-    min-width: 240px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); z-index: 50;
+  .score-user-badge {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(184,150,62,0.9);
+    font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: #1C1C1C; text-align: center; padding: 4px 0; font-weight: 500;
   }
-  .gdrive-menu.open { display: block; }
-  .gdrive-menu-title {
-    font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
-    color: var(--muted); padding: 0.75rem 1rem 0.5rem; border-bottom: 1px solid var(--border);
-  }
-  .gdrive-option {
-    display: flex; align-items: center; gap: 0.75rem;
-    width: 100%; background: transparent; border: none;
-    padding: 0.85rem 1rem; cursor: pointer; text-align: left;
-    font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--charcoal);
-    border-bottom: 1px solid var(--border); transition: background 0.15s;
-  }
-  .gdrive-option:last-child { border-bottom: none; }
-  .gdrive-option:hover { background: var(--cream); }
-  .export-toast {
-    display: none; position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
-    background: var(--charcoal); color: var(--cream); padding: 0.85rem 1.75rem;
-    font-size: 0.82rem; letter-spacing: 0.05em; border-radius: 2px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 200; white-space: nowrap;
-    animation: fadeInUp 0.3s ease;
-  }
-  .export-toast.visible { display: block; }
-  @keyframes fadeInUp { from { opacity:0; transform: translateX(-50%) translateY(10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+
   /* ── EXPORT BUTTONS ─────────────────────────── */
   .btn-export {
     display: inline-flex; align-items: center;
@@ -364,12 +338,14 @@
   @keyframes fadeUp { from { opacity:0; transform: translateX(-50%) translateY(8px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
   @media (max-width: 680px) { .btn-export { font-size: 0.68rem; padding: 0.65rem 0.9rem; } .export-toast { white-space: normal; max-width: 90vw; text-align: center; } }
   /* ────────────────────────────────────────────── */
+
   @media (max-width: 680px) {
     .critique-grid, .two-col, .outfits-grid { grid-template-columns: 1fr; }
     .score-block { grid-template-columns: 1fr; text-align: center; }
     .preview-section { flex-direction: column; }
     .preview-box { flex: none; width: 100%; }
     .api-key-section { flex-direction: column; }
+    .score-user-photo { width: 100%; height: 200px; }
   }
   @media print {
     header { position: static; }
@@ -415,7 +391,7 @@
   </div>
 
   <div class="info-note">
-    <strong>How it works:</strong> Upload a full-body photo of your outfit → Gemini Vision analyzes your style, fit, grooming &amp; hairstyle → You receive a scored critique + 4 AI-generated outfit recommendations tailored to your look.
+    <strong>How it works:</strong> Upload a full-body photo → photo is processed locally → Gemini Vision analyzes your style → you receive a scored critique + 4 outfit recommendations with AI-generated visuals.
   </div>
 
   <!-- UPLOAD SECTION -->
@@ -469,10 +445,10 @@
     <div class="loader"></div>
     <div class="loading-status" id="loadingStatus">Consulting your stylist…</div>
     <div class="loading-steps" style="margin-top:1rem;">
-      <div class="step-item" id="step1">— Sending image to Gemini Vision</div>
-      <div class="step-item" id="step2">— Analyzing outfit &amp; style elements</div>
+      <div class="step-item" id="step1">— Processing your photo</div>
+      <div class="step-item" id="step2">— Gemini analyzing outfit &amp; style</div>
       <div class="step-item" id="step3">— Crafting style score &amp; recommendations</div>
-      <div class="step-item" id="step4">— Generating outfit visuals</div>
+      <div class="step-item" id="step4">— Generating personalised outfit visuals</div>
     </div>
   </div>
 
@@ -484,6 +460,8 @@
 <script>
 let uploadedImageBase64 = null;
 let uploadedImageType = 'image/jpeg';
+let processedImageBase64 = null;
+let processedImageMime = 'image/png';
 
 const fileInput = document.getElementById('fileInput');
 const dropZone = document.getElementById('dropZone');
@@ -511,6 +489,53 @@ function handleFile(file) {
     previewSection.classList.add('visible');
   };
   reader.readAsDataURL(file);
+}
+
+// ── PHOTO PROCESSING — canvas crop/centre ──
+async function processPhotoLocally() {
+  const statusEl = document.getElementById('loadingStatus');
+  try {
+    statusEl.textContent = 'Processing your photo…';
+    await new Promise(r => setTimeout(r, 30));
+
+    const img = await new Promise((res, rej) => {
+      const i = new Image();
+      i.onload = () => res(i);
+      i.onerror = rej;
+      i.src = 'data:' + uploadedImageType + ';base64,' + uploadedImageBase64;
+    });
+
+    const srcW = img.naturalWidth;
+    const srcH = img.naturalHeight;
+
+    const targetW = Math.min(srcW, 600);
+    const targetH = Math.round(targetW * 1.5);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = targetW;
+    canvas.height = targetH;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#F5F0F0';
+    ctx.fillRect(0, 0, targetW, targetH);
+
+    const scale = targetH / srcH;
+    const drawW = srcW * scale;
+    const drawH = srcH * scale;
+    const offsetX = (targetW - drawW) / 2;
+    ctx.drawImage(img, offsetX, 0, drawW, drawH);
+
+    const dataUrl = canvas.toDataURL('image/png', 0.92);
+    processedImageBase64 = dataUrl.split(',')[1];
+    processedImageMime = 'image/png';
+
+    return true;
+  } catch (e) {
+    console.warn('Photo processing failed:', e.message);
+    processedImageBase64 = uploadedImageBase64;
+    processedImageMime = uploadedImageType;
+    return false;
+  }
 }
 
 // ── API Key localStorage persistence ──────────────────────────────
@@ -561,7 +586,6 @@ function updateKeyStatus(saved) {
   }
 }
 
-// Load key on page start
 window.addEventListener('DOMContentLoaded', loadSavedKey);
 
 function showError(msg) { errorBox.innerHTML = msg; errorBox.classList.add('visible'); }
@@ -588,7 +612,10 @@ async function startAnalysis() {
 
   const model = document.getElementById('modelSelect').value;
   setStep(1);
-  document.getElementById('loadingStatus').textContent = 'Sending image to Gemini…';
+  await processPhotoLocally();
+
+  setStep(2);
+  document.getElementById('loadingStatus').textContent = 'Gemini is analyzing your style…';
 
   const prompt = `You are an expert male fashion stylist and image consultant with 20 years of luxury fashion experience. Analyze the provided outfit image meticulously.
 
@@ -622,9 +649,6 @@ Return this exact JSON structure:
 Rules: styleScore is an integer 1-100. ratingLabel is one of: Needs Work, Developing, Decent, Good, Strong, Excellent, Impeccable. outfits must have exactly 4 entries covering diverse occasions. All string values must be on a single line. Be specific, actionable, and fashion-forward.`;
 
   try {
-    setStep(2);
-    document.getElementById('loadingStatus').textContent = 'Gemini is analyzing your style…';
-
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
     const body = {
       contents: [{
@@ -667,7 +691,7 @@ Rules: styleScore is an integer 1-100. ratingLabel is one of: Needs Work, Develo
     if (!analysis.outfits || analysis.outfits.length < 1) throw new Error('Incomplete analysis received. Please try again.');
 
     setStep(4);
-    document.getElementById('loadingStatus').textContent = 'Generating outfit visuals…';
+    document.getElementById('loadingStatus').textContent = 'Generating personalised outfit visuals…';
     await new Promise(r => setTimeout(r, 500));
 
     renderReport(analysis);
@@ -675,7 +699,7 @@ Rules: styleScore is an integer 1-100. ratingLabel is one of: Needs Work, Develo
     loadingSection.classList.remove('visible');
     document.getElementById('reportSection').classList.add('visible');
 
-    generateOutfitImages(analysis.outfits);
+    generateOutfitImages(analysis.outfits, apiKey);
 
   } catch (err) {
     loadingSection.classList.remove('visible');
@@ -686,7 +710,7 @@ Rules: styleScore is an integer 1-100. ratingLabel is one of: Needs Work, Develo
 }
 
 function renderReport(a) {
-  _lastAnalysis = a;  // store for export
+  _lastAnalysis = a;
   const report = document.getElementById('reportSection');
   const scoreColor = a.styleScore >= 80 ? '#5A8A5A' : a.styleScore >= 60 ? '#B8963E' : '#8A5A5A';
 
@@ -719,6 +743,10 @@ function renderReport(a) {
         <div class="score-rating">${a.ratingLabel}</div>
         <div class="score-verdict">"${a.verdict}"</div>
       </div>
+      <div class="score-user-wrap">
+        <img class="score-user-photo" id="scoreUserPhoto" src="" alt="Your Look">
+        <div class="score-user-badge">Your Look</div>
+      </div>
     </div>
 
     <div class="critique-grid">
@@ -745,27 +773,105 @@ function renderReport(a) {
 
     <div class="action-bar">
       <button class="btn-secondary" onclick="resetApp()">← New Analysis</button>
-      <button class="btn-print" onclick="window.print()">Print Report</button>
-    </div>`;
+      <button class="btn-print" onclick="window.print()">🖨 Print</button>
+      <button class="btn-export btn-docx" onclick="exportToDocx()">⬇ Google Docs (.docx)</button>
+      <button class="btn-export btn-slides" onclick="exportToPptx()">⬇ Google Slides (.pptx)</button>
+    </div>
+    <div style="font-size:0.72rem;color:var(--muted);margin-top:0.75rem;line-height:1.8;padding-bottom:2rem;">
+      💡 <strong>To open in Google:</strong> Go to <a href="https://drive.google.com" target="_blank" style="color:var(--gold)">drive.google.com</a> → drag the downloaded file in → it opens automatically.
+    </div>
+    <div id="exportToast" class="export-toast"></div>`;
+
+  requestAnimationFrame(() => {
+    const scorePhoto = document.getElementById('scoreUserPhoto');
+    if (scorePhoto) {
+      const mime = processedImageBase64 ? (processedImageMime || 'image/png') : (uploadedImageType || 'image/jpeg');
+      const b64 = processedImageBase64 || uploadedImageBase64;
+      if (b64) {
+        scorePhoto.src = 'data:' + mime + ';base64,' + b64;
+        scorePhoto.onerror = () => {
+          if (uploadedImageBase64) scorePhoto.src = 'data:' + (uploadedImageType||'image/jpeg') + ';base64,' + uploadedImageBase64;
+        };
+      }
+    }
+  });
 }
 
-async function generateOutfitImages(outfits) {
+async function generateOutfitImages(outfits, apiKey) {
+  function setImage(imgEl, phEl, src) {
+    return new Promise(resolve => {
+      imgEl.onload = () => { imgEl.style.opacity = '1'; imgEl.style.position = 'relative'; if (phEl) phEl.style.display = 'none'; resolve(true); };
+      imgEl.onerror = () => { resolve(false); };
+      imgEl.src = src;
+    });
+  }
+
+  function pollinationsUrl(outfit) {
+    const seed = Math.floor(Math.random() * 999999);
+    const prompt = encodeURIComponent(
+      outfit.imagePrompt + ', mens fashion editorial photography, full body, professional studio lighting, clean neutral background'
+    );
+    return `https://image.pollinations.ai/prompt/${prompt}?width=512&height=768&model=flux&nologo=true&seed=${seed}`;
+  }
+
   for (let i = 0; i < outfits.length; i++) {
+    const img = document.getElementById('oi' + i);
+    const ph = document.getElementById('ph' + i);
+    if (!img) continue;
+
+    const spanEl = ph ? ph.querySelector('span') : null;
+    if (spanEl) spanEl.textContent = `Generating look ${i + 1} of ${outfits.length}…`;
+
     try {
-      const prompt = encodeURIComponent(outfits[i].imagePrompt + ', men\'s fashion editorial photography, full body, clean neutral background, professional studio lighting');
-      const url = `https://image.pollinations.ai/prompt/${prompt}?width=512&height=768&model=flux&nologo=true&seed=${Math.floor(Math.random()*99999)}`;
-      const img = document.getElementById('oi' + i);
-      const ph = document.getElementById('ph' + i);
-      img.onload = () => { img.style.opacity = '1'; img.style.position = 'relative'; if(ph) ph.style.display = 'none'; };
-      img.onerror = () => { if(ph) ph.innerHTML = '<span style="font-size:0.7rem;color:var(--muted);padding:1rem;text-align:center;">Visual unavailable</span>'; };
-      img.src = url;
-    } catch(e) { console.warn('Image gen failed', i); }
-    await new Promise(r => setTimeout(r, 400));
+      const pollUrl = pollinationsUrl(outfits[i]);
+      if (ph) { ph.style.display = 'flex'; if (spanEl) spanEl.textContent = `Rendering look ${i + 1}…`; }
+      img.style.opacity = '0';
+      await setImage(img, ph, pollUrl);
+    } catch (err) {
+      if (ph) ph.innerHTML = `
+        <div style="text-align:center; padding:1.5rem;">
+          <div style="font-size:1.5rem; margin-bottom:0.5rem;">🎨</div>
+          <div style="font-size:0.72rem; color:var(--muted); line-height:1.5;">
+            ${outfits[i].title}<br>
+            <span style="font-size:0.65rem; opacity:0.7">Image unavailable</span>
+          </div>
+        </div>`;
+    }
+
+    if (i < outfits.length - 1) {
+      await new Promise(r => setTimeout(r, 800));
+    }
   }
 }
 
+// ── ROBUST JSON PARSER ──
+function parseGeminiJSON(raw) {
+  let text = raw.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start === -1 || end === -1) return null;
+  text = text.slice(start, end + 1);
 
-// ── EXPORT FUNCTIONS ─────────────────────────────────────────────────
+  try { return JSON.parse(text); } catch(_) {}
+
+  text = text
+    .replace(/,\s*([}\]])/g, '$1')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/"([^"]*)"/g, (m, inner) => '"' + inner.replace(/\n/g, ' ').replace(/\r/g, '') + '"')
+    .replace(/[\x00-\x1F\x7F]/g, ' ');
+
+  try { return JSON.parse(text); } catch(_) {}
+
+  try {
+    return (new Function('return (' + text + ')'))();
+  } catch(e) {
+    console.error('JSON parse failed:', e);
+    return null;
+  }
+}
+
+// ── EXPORT FUNCTIONS ──
 let _lastAnalysis = null;
 
 function showToast(msg, duration=4000) {
@@ -777,26 +883,20 @@ function showToast(msg, duration=4000) {
   t._timer = setTimeout(() => t.classList.remove('visible'), duration);
 }
 
-// ── GOOGLE DOCS (.docx) EXPORT ───────────────────────────────────────
 async function exportToDocx() {
   const a = _lastAnalysis;
   if (!a) { showToast('Run an analysis first.'); return; }
-  if (typeof JSZip === 'undefined') { showToast('JSZip library not loaded. Check your connection.'); return; }
+  if (typeof JSZip === 'undefined') { showToast('JSZip library not loaded.'); return; }
 
   showToast('Building Word document…');
-
   const date = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
 
-  // Helper: wrap text in a Word paragraph with optional style
   function para(text, opts={}) {
     const { bold=false, size=22, color='1C1C1C', spacing=160, center=false, italic=false } = opts;
     const jc = center ? '<w:jc w:val="center"/>' : '';
-    const b  = bold   ? '<w:b/>' : '';
-    const i  = italic ? '<w:i/>' : '';
-    return `<w:p>
-      <w:pPr><w:spacing w:after="${spacing}"/>${jc}</w:pPr>
-      <w:r><w:rPr>${b}${i}<w:sz w:val="${size}"/><w:color w:val="${color}"/></w:rPr>
-      <w:t xml:space="preserve">${escXml(text)}</w:t></w:r></w:p>`;
+    const b = bold ? '<w:b/>' : '';
+    const i = italic ? '<w:i/>' : '';
+    return `<w:p><w:pPr><w:spacing w:after="${spacing}"/>${jc}</w:pPr><w:r><w:rPr>${b}${i}<w:sz w:val="${size}"/><w:color w:val="${color}"/></w:rPr><w:t xml:space="preserve">${escXml(text)}</w:t></w:r></w:p>`;
   }
   function heading(text, lvl=1) {
     const sz = lvl===1 ? 36 : lvl===2 ? 28 : 24;
@@ -809,100 +909,41 @@ async function exportToDocx() {
     return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
   }
 
-  // Build document body
   let body = '';
-
-  // Cover
   body += para('ATELIER · AI', {bold:true, size:52, color:'1C1C1C', center:true, spacing:80});
   body += para('PERSONAL STYLE REPORT', {bold:true, size:20, color:'B8963E', center:true, spacing:80});
   body += para(`Generated ${date}`, {size:18, color:'7A7570', center:true, spacing:400});
   body += ruler();
-
-  // Score
   body += heading('STYLE SCORE', 1);
   body += para(`${a.styleScore}/100 — ${a.ratingLabel}`, {bold:true, size:32, color:'B8963E', spacing:120});
   body += para(a.verdict, {size:22, italic:true, color:'2E2E2E', spacing:300});
   body += ruler();
-
-  // Critique
   body += heading('DETAILED CRITIQUE', 1);
-  const critiqueMap = {
-    'Clothing Style': a.critique.clothing,
-    'Fit & Proportion': a.critique.fit,
-    'Grooming': a.critique.grooming,
-    'Hairstyle': a.critique.hairstyle,
-    'Slimming & Silhouette Techniques': a.critique.slimmingTips
-  };
-  for (const [title, text] of Object.entries(critiqueMap)) {
-    body += heading(title, 2);
-    body += para(text, {size:20, spacing:200});
-  }
+  const critiqueMap = {'Clothing Style': a.critique.clothing, 'Fit & Proportion': a.critique.fit, 'Grooming': a.critique.grooming, 'Hairstyle': a.critique.hairstyle, 'Slimming & Silhouette Techniques': a.critique.slimmingTips};
+  for (const [title, text] of Object.entries(critiqueMap)) { body += heading(title, 2); body += para(text, {size:20, spacing:200}); }
   body += ruler();
-
-  // Strengths & Improvements
   body += heading("WHAT'S WORKING", 1);
   (a.strengths||[]).forEach(s => { body += para('+ ' + s, {size:20, color:'3A6A3A', spacing:120}); });
   body += para('', {spacing:100});
   body += heading('AREAS TO ELEVATE', 1);
   (a.improvements||[]).forEach(s => { body += para('→ ' + s, {size:20, color:'6A3A3A', spacing:120}); });
   body += ruler();
-
-  // Outfits
-  body += heading('YOUR STYLE BLUEPRINT — 4 RECOMMENDED LOOKS', 1);
+  body += heading('YOUR STYLE BLUEPRINT', 1);
   (a.outfits||[]).forEach((o, i) => {
     body += heading(`Look 0${i+1} · ${o.occasion} — ${o.title}`, 2);
     body += para(o.description, {size:20, italic:true, spacing:160});
     (o.items||[]).forEach(item => { body += para('— ' + item, {size:20, color:'1C1C1C', spacing:100}); });
     body += para('', {spacing:200});
   });
-
-  // Footer
   body += ruler();
   body += para('ATELIER AI Style Consultant · Powered by Google Gemini', {size:16, color:'7A7570', center:true, spacing:80});
-  body += para('Outfit visuals are AI-generated. Results are for personal style guidance only.', {size:14, color:'7A7570', center:true});
 
-  // Assemble DOCX ZIP
-  const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-  <Default Extension="xml" ContentType="application/xml"/>
-  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
-  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
-  <Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>
-</Types>`;
-
-  const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
-  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
-</Relationships>`;
-
-  const wordRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
-</Relationships>`;
-
-  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-  <w:docDefaults><w:rPrDefault><w:rPr>
-    <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>
-    <w:sz w:val="22"/><w:szCs w:val="22"/>
-  </w:rPr></w:rPrDefault></w:docDefaults>
-</w:styles>`;
-
-  const coreXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"
-  xmlns:dc="http://purl.org/dc/elements/1.1/">
-  <dc:title>ATELIER Style Report</dc:title>
-  <dc:creator>ATELIER AI</dc:creator>
-</cp:coreProperties>`;
-
-  const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-  <w:body>${body}<w:sectPr>
-    <w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134"/>
-  </w:sectPr></w:body>
-</w:document>`;
+  const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>`;
+  const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>`;
+  const wordRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr></w:rPrDefault></w:docDefaults></w:styles>`;
+  const coreXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>ATELIER Style Report</dc:title><dc:creator>ATELIER AI</dc:creator></cp:coreProperties>`;
+  const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}<w:sectPr><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134"/></w:sectPr></w:body></w:document>`;
 
   const zip = new JSZip();
   zip.file('[Content_Types].xml', contentTypes);
@@ -912,195 +953,54 @@ async function exportToDocx() {
   zip.file('word/_rels/document.xml.rels', wordRels);
   zip.file('docProps/core.xml', coreXml);
 
-  const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-  const url  = URL.createObjectURL(blob);
+  const blob = await zip.generateAsync({ type: 'blob' });
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `ATELIER-Style-Report-${new Date().toISOString().slice(0,10)}.docx`;
+  link.download = `ATELIER-Report-${date}.docx`;
   link.click();
   URL.revokeObjectURL(url);
 
-  showToast('✅ .docx downloaded! Upload to Google Drive → opens in Google Docs automatically.');
-  setTimeout(() => window.open('https://drive.google.com', '_blank'), 1800);
+  showToast('✅ .docx downloaded! Go to drive.google.com to upload.');
 }
 
-// ── GOOGLE SLIDES (.pptx) EXPORT ─────────────────────────────────────
 async function exportToPptx() {
   const a = _lastAnalysis;
   if (!a) { showToast('Run an analysis first.'); return; }
-  if (typeof PptxGenJS === 'undefined') { showToast('PptxGenJS library not loaded. Check your connection.'); return; }
+  if (typeof PptxGenJS === 'undefined') { showToast('PptxGenJS not loaded.'); return; }
 
   showToast('Building presentation…');
-  await new Promise(r => setTimeout(r, 50)); // let UI update
-
   const pptx = new PptxGenJS();
-  pptx.layout = 'LAYOUT_WIDE'; // 16:9
-  pptx.title  = 'ATELIER Style Report';
-  pptx.author = 'ATELIER AI';
+  pptx.layout = 'LAYOUT_WIDE';
+  pptx.title = 'ATELIER Style Report';
 
-  // Color palette
-  const C = { gold:'B8963E', dark:'1C1C1C', cream:'F5F0E8', muted:'7A7570', white:'FFFFFF',
-               green:'3A6A3A', red:'6A3A3A', blue:'1a73e8' };
+  const C = { gold:'B8963E', dark:'1C1C1C', cream:'F5F0E8', muted:'7A7570', white:'FFFFFF', green:'3A6A3A', red:'6A3A3A' };
 
-  // ── SLIDE 1: Cover ──────────────────────────────────────────────────
-  {
-    const s = pptx.addSlide();
-    s.background = { color: C.dark };
-    s.addText('ATELIER · AI', { x:0.5, y:1.5, w:'90%', fontSize:54, bold:true, color:C.cream, fontFace:'Georgia', align:'center' });
-    s.addText('PERSONAL STYLE REPORT', { x:0.5, y:2.9, w:'90%', fontSize:18, bold:true, color:C.gold, fontFace:'Calibri', align:'center', charSpacing:8 });
-    s.addShape(pptx.ShapeType.line, { x:2.5, y:3.7, w:8.3, h:0, line:{ color:C.gold, width:1 } });
-    s.addText(`Generated ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}`, { x:0.5, y:4.0, w:'90%', fontSize:13, color:C.muted, align:'center' });
-    s.addText('Powered by Google Gemini Vision', { x:0.5, y:6.6, w:'90%', fontSize:11, color:C.muted, align:'center', italic:true });
-  }
+  const s1 = pptx.addSlide();
+  s1.background = { color: C.dark };
+  s1.addText('ATELIER · AI', { x:0.5, y:1.5, w:'90%', fontSize:54, bold:true, color:C.cream, align:'center' });
+  s1.addText(`Generated ${new Date().toLocaleDateString()}`, { x:0.5, y:4.0, w:'90%', fontSize:13, color:C.muted, align:'center' });
 
-  // ── SLIDE 2: Style Score ────────────────────────────────────────────
-  {
-    const s = pptx.addSlide();
-    s.background = { color: C.dark };
-    // Gold circle (simulate with rounded rect)
-    s.addShape(pptx.ShapeType.ellipse, { x:0.6, y:0.8, w:2.8, h:2.8, fill:{ type:'none' }, line:{ color:C.gold, width:2 } });
-    s.addText(`${a.styleScore}`, { x:0.6, y:1.3, w:2.8, fontSize:64, bold:true, color:C.gold, fontFace:'Georgia', align:'center' });
-    s.addText('/100', { x:0.6, y:2.5, w:2.8, fontSize:14, color:C.muted, align:'center' });
-    s.addText('STYLE SCORE', { x:0.5, y:3.8, w:2.9, fontSize:10, color:C.muted, align:'center', charSpacing:4 });
-    // Verdict block
-    s.addText(a.ratingLabel.toUpperCase(), { x:4.0, y:1.0, w:8.8, fontSize:14, bold:true, color:C.gold, charSpacing:6 });
-    s.addText(`"${a.verdict}"`, { x:4.0, y:1.6, w:8.8, fontSize:18, italic:true, color:C.cream, fontFace:'Georgia', lineSpacingMultiple:1.4 });
-  }
+  const s2 = pptx.addSlide();
+  s2.background = { color: C.dark };
+  s2.addText(`${a.styleScore}/100`, { x:0.6, y:1.3, w:2.8, fontSize:64, bold:true, color:C.gold, align:'center' });
+  s2.addText(`"${a.verdict}"`, { x:4.0, y:1.6, w:8.8, fontSize:18, italic:true, color:C.cream });
 
-  // ── SLIDE 3: Clothing & Fit ─────────────────────────────────────────
-  function critiqueSlide(title1, text1, title2, text2) {
-    const s = pptx.addSlide();
-    s.background = { color: C.cream };
-    s.addText('DETAILED CRITIQUE', { x:0.5, y:0.25, w:12.3, fontSize:10, bold:true, color:C.gold, charSpacing:6 });
-    s.addShape(pptx.ShapeType.line, { x:0.5, y:0.65, w:12.3, h:0, line:{ color:C.gold, width:0.75 } });
-    // Left card
-    s.addShape(pptx.ShapeType.rect, { x:0.4, y:0.85, w:6.0, h:6.2, fill:{ color:C.white }, line:{ color:'DDDDDD', width:0.5 } });
-    s.addText(title1, { x:0.55, y:0.95, w:5.7, fontSize:10, bold:true, color:C.gold, charSpacing:4 });
-    s.addShape(pptx.ShapeType.line, { x:0.55, y:1.3, w:5.7, h:0, line:{ color:'DDDDDD', width:0.5 } });
-    s.addText(text1, { x:0.55, y:1.4, w:5.7, h:5.4, fontSize:13, color:C.dark, lineSpacingMultiple:1.5, valign:'top' });
-    // Right card
-    s.addShape(pptx.ShapeType.rect, { x:6.8, y:0.85, w:6.0, h:6.2, fill:{ color:C.white }, line:{ color:'DDDDDD', width:0.5 } });
-    s.addText(title2, { x:6.95, y:0.95, w:5.7, fontSize:10, bold:true, color:C.gold, charSpacing:4 });
-    s.addShape(pptx.ShapeType.line, { x:6.95, y:1.3, w:5.7, h:0, line:{ color:'DDDDDD', width:0.5 } });
-    s.addText(text2, { x:6.95, y:1.4, w:5.7, h:5.4, fontSize:13, color:C.dark, lineSpacingMultiple:1.5, valign:'top' });
-  }
-  critiqueSlide('CLOTHING STYLE', a.critique.clothing, 'FIT & PROPORTION', a.critique.fit);
-  critiqueSlide('GROOMING', a.critique.grooming, 'HAIRSTYLE', a.critique.hairstyle);
-
-  // ── SLIDE 5: Slimming Tips ──────────────────────────────────────────
-  {
-    const s = pptx.addSlide();
-    s.background = { color: C.cream };
-    s.addText('SLIMMING & SILHOUETTE TECHNIQUES', { x:0.5, y:0.25, w:12.3, fontSize:10, bold:true, color:C.gold, charSpacing:5 });
-    s.addShape(pptx.ShapeType.line, { x:0.5, y:0.65, w:12.3, h:0, line:{ color:C.gold, width:0.75 } });
-    s.addShape(pptx.ShapeType.rect, { x:0.4, y:0.85, w:12.4, h:5.8, fill:{ color:C.white }, line:{ color:'DDDDDD', width:0.5 } });
-    s.addText(a.critique.slimmingTips, { x:0.6, y:1.1, w:12.0, h:5.4, fontSize:15, color:C.dark, lineSpacingMultiple:1.6, valign:'top' });
-  }
-
-  // ── SLIDE 6: Strengths & Improvements ──────────────────────────────
-  {
-    const s = pptx.addSlide();
-    s.background = { color: C.cream };
-    s.addText('ASSESSMENT SUMMARY', { x:0.5, y:0.25, w:12.3, fontSize:10, bold:true, color:C.gold, charSpacing:6 });
-    s.addShape(pptx.ShapeType.line, { x:0.5, y:0.65, w:12.3, h:0, line:{ color:C.gold, width:0.75 } });
-    // Strengths
-    s.addShape(pptx.ShapeType.rect, { x:0.4, y:0.85, w:6.0, h:6.2, fill:{ color:'F0F7F0' }, line:{ color:'AADDAA', width:0.5 } });
-    s.addText("WHAT'S WORKING", { x:0.55, y:0.95, w:5.7, fontSize:10, bold:true, color:C.green, charSpacing:4 });
-    s.addShape(pptx.ShapeType.line, { x:0.55, y:1.3, w:5.7, h:0, line:{ color:'AADDAA', width:0.5 } });
-    const strengthRows = (a.strengths||[]).map(s => ({ text:'+ ' + s, options:{ fontSize:13, color:C.green, bullet:false, paraSpaceAfter:8 } }));
-    s.addText(strengthRows, { x:0.55, y:1.45, w:5.7, h:5.4, valign:'top' });
-    // Improvements
-    s.addShape(pptx.ShapeType.rect, { x:6.8, y:0.85, w:6.0, h:6.2, fill:{ color:'FDF0F0' }, line:{ color:'DDAAAA', width:0.5 } });
-    s.addText('AREAS TO ELEVATE', { x:6.95, y:0.95, w:5.7, fontSize:10, bold:true, color:C.red, charSpacing:4 });
-    s.addShape(pptx.ShapeType.line, { x:6.95, y:1.3, w:5.7, h:0, line:{ color:'DDAAAA', width:0.5 } });
-    const improveRows = (a.improvements||[]).map(imp => ({ text:'→ ' + imp, options:{ fontSize:13, color:C.red, paraSpaceAfter:8 } }));
-    s.addText(improveRows, { x:6.95, y:1.45, w:5.7, h:5.4, valign:'top' });
-  }
-
-  // ── SLIDES 7–10: Outfit Cards ────────────────────────────────────────
   (a.outfits||[]).forEach((o, i) => {
     const s = pptx.addSlide();
     s.background = { color: C.dark };
-    // Header band
-    s.addShape(pptx.ShapeType.rect, { x:0, y:0, w:13.33, h:1.1, fill:{ color:'252525' }, line:{ type:'none' } });
-    s.addText(`LOOK 0${i+1}`, { x:0.5, y:0.1, w:3.0, fontSize:10, bold:true, color:C.gold, charSpacing:6 });
-    s.addText(o.occasion.toUpperCase(), { x:0.5, y:0.45, w:12.3, fontSize:9, color:C.muted, charSpacing:4 });
-    s.addText(o.title, { x:0.5, y:0.7, w:12.3, fontSize:20, bold:true, color:C.cream, fontFace:'Georgia' });
-    // Divider
-    s.addShape(pptx.ShapeType.line, { x:0.5, y:1.25, w:12.3, h:0, line:{ color:C.gold, width:0.75 } });
-    // Description
-    s.addText(o.description, { x:0.5, y:1.4, w:12.3, fontSize:14, italic:true, color:'CCCCCC', lineSpacingMultiple:1.5 });
-    // Items list
-    const itemRows = (o.items||[]).map(item => ({
-      text: '— ' + item,
-      options: { fontSize:13, color:C.cream, paraSpaceAfter:6 }
-    }));
-    s.addText(itemRows, { x:0.5, y:2.8, w:12.3, h:4.0, valign:'top' });
-    // Slide number tag
-    s.addText(`${i+1} / ${(a.outfits||[]).length}`, { x:12.0, y:6.8, w:1.0, fontSize:9, color:C.muted, align:'right' });
+    s.addShape(pptx.ShapeType.rect, { x:0, y:0, w:13.33, h:1.1, fill:{ color:'252525' } });
+    s.addText(`LOOK 0${i+1}`, { x:0.5, y:0.1, w:3.0, fontSize:10, bold:true, color:C.gold });
+    s.addText(o.title, { x:0.5, y:0.7, w:12.3, fontSize:20, bold:true, color:C.cream });
+    s.addText(o.description, { x:0.5, y:1.4, w:12.3, fontSize:14, italic:true, color:'CCCCCC' });
+    (o.items||[]).forEach(item => { s.addText('— ' + item, { x:0.5, y:2.8, w:12.3, fontSize:13, color:C.cream }); });
   });
 
-  // ── Final slide ─────────────────────────────────────────────────────
-  {
-    const s = pptx.addSlide();
-    s.background = { color: C.dark };
-    s.addShape(pptx.ShapeType.line, { x:2.5, y:3.2, w:8.3, h:0, line:{ color:C.gold, width:1 } });
-    s.addText('ATELIER · AI', { x:0.5, y:2.5, w:'90%', fontSize:36, bold:true, color:C.cream, fontFace:'Georgia', align:'center' });
-    s.addText('Your style journey starts today.', { x:0.5, y:3.5, w:'90%', fontSize:18, italic:true, color:C.gold, fontFace:'Georgia', align:'center' });
-    s.addText('Powered by Google Gemini Vision', { x:0.5, y:5.5, w:'90%', fontSize:11, color:C.muted, align:'center' });
-  }
-
-  // ── Write file ──────────────────────────────────────────────────────
   try {
-    await pptx.writeFile({ fileName: `ATELIER-Style-Report-${new Date().toISOString().slice(0,10)}.pptx` });
-    showToast('✅ .pptx downloaded! Upload to Google Drive → opens in Google Slides automatically.');
-    setTimeout(() => window.open('https://drive.google.com', '_blank'), 1800);
+    await pptx.writeFile({ fileName: `ATELIER-Report-${new Date().toISOString().slice(0,10)}.pptx` });
+    showToast('✅ .pptx downloaded! Go to drive.google.com to upload.');
   } catch(e) {
-    console.error(e);
-    showToast('Export failed: ' + e.message);
-  }
-}
-
-// ── Robust JSON extractor ──────────────────────────────────────────
-function parseGeminiJSON(raw) {
-  // 1. Strip markdown code fences
-  let text = raw
-    .replace(/```json\s*/gi, '')
-    .replace(/```\s*/gi, '')
-    .trim();
-
-  // 2. Extract outermost { … } block
-  const start = text.indexOf('{');
-  const end   = text.lastIndexOf('}');
-  if (start === -1 || end === -1) return null;
-  text = text.slice(start, end + 1);
-
-  // 3. Try clean parse first
-  try { return JSON.parse(text); } catch(_) {}
-
-  // 4. Sanitise common Gemini JSON issues then retry
-  text = text
-    // trailing commas before ] or }
-    .replace(/,\s*([}\]])/g, '$1')
-    // smart/curly quotes → straight
-    .replace(/[\u2018\u2019]/g, "'")
-    .replace(/[\u201C\u201D]/g, '"')
-    // literal newlines inside string values → space
-    .replace(/"([^"]*)"/g, (m, inner) =>
-      '"' + inner.replace(/\n/g, ' ').replace(/\r/g, '') + '"'
-    )
-    // remove control characters
-    .replace(/[\x00-\x1F\x7F]/g, ' ');
-
-  try { return JSON.parse(text); } catch(_) {}
-
-  // 5. Last resort — eval-style parse (safe: restricted to JSON-like data)
-  try {
-    // eslint-disable-next-line no-new-func
-    return (new Function('return (' + text + ')'))();
-  } catch(e) {
-    console.error('JSON parse failed:', e, '\nRaw text:', text);
-    return null;
+    showToast('Export failed.');
   }
 }
 
